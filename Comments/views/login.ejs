@@ -1,0 +1,51 @@
+<html lang="zh-CN"><head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
+    <title>Login</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/jumbotron.css" rel="stylesheet">
+  </head>
+  
+  <body>
+    <% include header.ejs %>
+    
+    <div class="container">
+      <h1>Welcome to login</h1>
+      <form>
+        <div class="form-group">
+          <label for="username">User Name</label>
+          <input type="text" class="form-control" id="username" placeholder="User Name">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" class="form-control" id="password" placeholder="Password">
+        </div>
+        <input type="button" value="Sign in" id="signin">
+      </form>
+    </div>
+
+    <script src="/js/jquery-3.4.1.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script>
+      $("#signin").click(function(){
+        $.post("/doLogin", {
+          "username": $("#username").val(),
+          "password": $("#password").val()
+        }, function(result){
+          if(result == "1"){
+            alert("Login Sucessfully!");
+            window.location = "/";
+          } else if(result == "0"){
+            alert("Username or password is wrong.");
+          } else if(result == "-3"){
+            alert("Server error.");
+          }
+        });
+      });
+    </script>
+  </body>
+  </html>

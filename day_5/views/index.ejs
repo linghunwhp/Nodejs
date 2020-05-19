@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Index</title>
+    <link href="css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+    <style type="text/css">
+      #submitSuccess, #submitFailed{
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <div class="container">
+        <form class="form-horizontal" actions="get post">
+          <div class="form-group">
+            <label for="name" class="col-sm-2 control-label">Name</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-contorl" id="name" name="name" placeholder="">
+            </div>
+          </div>
+    
+          <div class="form-group">
+            <label for="message" class="col-sm-2 control-label">Message</label>
+            <div class="col-sm-10">
+              <textarea name="message" id="message" class="form-control" rows="3" required="required"></textarea>
+            </div>
+          </div>
+    
+          <div class="form-group">
+            <label for="message" class="col-sm-2 control-label">Message</label>
+            <div class="col-sm-10">
+              <button id="submit" type="button" class="btn btn-success">Submit</button>
+            </div>
+          </div>
+        </form>
+          <ul class="pagination">
+            <li>
+              <a href="#" aria-label="Previous" class="prvPage">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            <% for(var i=1; i<=page; i++ ){ %>
+              <li class="pageNum" data-page="<%= i %>"><a href="#"><%= i %></a></li>
+            <% } %>
+            <li>
+              <a href="#" aria-label="Next" class="nextPage">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          </ul>
+  
+        <div id="AllMessage" style="height: 500px;">
+        </div>
+        
+        <div class="alert alert-success" role="alert" id="submitSuccess"> Submit Success </div>
+        <div class="alert alert-danger" role="alert" id="submitFailed"> Submit Failed </div>        
+      </div>
+    </div>
+
+    <script type="text/template" id="MessageBoard">
+      <div class="list-group">
+        <a class="list-group-item active">
+          <h4 class="list-group-item-heading">Name: {{= name }}</h4>
+          <p class="list-group-item-text">Message: {{= message }}</p>
+          <p class="list-group-item-text">Time: {{= time }}</p>
+        </a>
+      </div>
+    </script>
+
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/underscore-modify.js" type="text/javascript"></script>
+    <script>
+      var currentPage = 1;
+      $(".pageNum:first").addClass("active");
+
+      $(".pageNum").click(function(){
+        var pageNum = parseInt($(this).attr("data-page"));
+        currentPage = pageNum;
+        getData(pageNum);
+        $(this).addClass("active").siblings().removeClass("active");
+      });
+
+      $(".prvPage").click(function(){
+        currentPage--;
+        getData(currentPage);
+      });
+
+      $(".nextPage").click(function(){
+        currentPage++;
+        getData(currentPage);
+      });
+
+      // get default page data
+      getData(currentPage);
+      function getData(pageNum){
+        // Ajax find data
+        $.get("/read?page=" + pageNum, function(result){
+          // var json = JSON.parse(result);
+          var compiled = _.template($("#MessageBoard").html());
+          $("#AllMessage").html("");
+          for(var i=0; i<result.length; i++){
+            var html = compiled({name: result[i].name, message: result[i].message, time: result[i].time});
+            $("#AllMessage").append($(html));
+          }
+        });
+      }
+
+      // Ajax for submit form
+      $("#submit").click(function(){
+          $.post("/msgSubmit", {
+          "name": $("#name").val(),
+          "message": $("#message").val(),
+          "time": new Date()
+        }, function(result){
+          if(result == -1){
+            $("#submitFailed").fadeIn();
+            $("#submitFailed").fadeOut();
+          }else if(result == 1){
+            $("#submitSuccess").fadeIn();
+            $("#submitSuccess").fadeOut(3000);
+
+            // 为了用户体验，并且不刷新页面，先放置假数据
+            var compiled = _.template($("#MessageBoard").html());
+            var html = compiled({name: $("#name").val(), message: $("#message").val(), time: $("#time").val()});
+            $(html).insertBefore($("#AllMessage"));
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
